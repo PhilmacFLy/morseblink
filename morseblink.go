@@ -36,62 +36,69 @@ func sendreset(t *net.Conn) {
 	time.Sleep(pause)
 }
 
-func populatetable(m *map[rune]string) {
+func populatetable(m *map[string]string) {
 	words := *m
-	words['A'] = "01"
-	words['B'] = "100"
-	words['C'] = "101"
-	words['D'] = "100"
-	words['E'] = "0"
-	words['F'] = "0010"
-	words['G'] = "110"
-	words['H'] = "0000"
-	words['I'] = "00"
-	words['J'] = "0111"
-	words['K'] = "101"
-	words['L'] = "0100"
-	words['M'] = "11"
-	words['N'] = "10"
-	words['O'] = "111"
-	words['P'] = "0110"
-	words['Q'] = "1101"
-	words['R'] = "010"
-	words['S'] = "000"
-	words['T'] = "1"
-	words['U'] = "001"
-	words['V'] = "0001"
-	words['W'] = "011"
-	words['X'] = "1001"
-	words['Y'] = "1011"
-	words['Z'] = "1100"
-	words['1'] = "01111"
-	words['2'] = "00111"
-	words['3'] = "00011"
-	words['4'] = "00001"
-	words['5'] = "00000"
-	words['6'] = "10000"
-	words['7'] = "11000"
-	words['8'] = "11100"
-	words['9'] = "11110"
-	words['0'] = "11111"
+	words["A"] = "01"
+	words["B"] = "100"
+	words["C"] = "101"
+	words["D"] = "100"
+	words["E"] = "0"
+	words["F"] = "0010"
+	words["G"] = "110"
+	words["H"] = "0000"
+	words["I"] = "00"
+	words["J"] = "0111"
+	words["K"] = "101"
+	words["L"] = "0100"
+	words["M"] = "11"
+	words["N"] = "10"
+	words["O"] = "111"
+	words["P"] = "0110"
+	words["Q"] = "1101"
+	words["R"] = "010"
+	words["S"] = "000"
+	words["T"] = "1"
+	words["U"] = "001"
+	words["V"] = "0001"
+	words["W"] = "011"
+	words["X"] = "1001"
+	words["Y"] = "1011"
+	words["Z"] = "1100"
+	words["1"] = "01111"
+	words["2"] = "00111"
+	words["3"] = "00011"
+	words["4"] = "00001"
+	words["5"] = "00000"
+	words["6"] = "10000"
+	words["7"] = "11000"
+	words["8"] = "11100"
+	words["9"] = "11110"
+	words["0"] = "11111"
+	words["KA"] = "10101"
+	words["AR"] = "01010"
 	*m = words
 }
 
-func sendword(t *net.Conn, m *map[rune]string, w string, c string) {
+func sendword(t *net.Conn, m *map[string]string, w string, c string) {
 	w = strings.ToUpper(w)
 	for _, letter := range w {
-		words := *m
 		//fmt.Printf("%c", letter)
-		code := words[letter]
-		for _, symbol := range code {
-			//fmt.Printf("%c", symbol)
-			if symbol == '1' {
-				sendmorse(t, true, c)
-			} else {
-				sendmorse(t, false, c)
-			}
+		sendletter(t, m, string(letter), c)
+	}
+}
+
+func sendletter(t *net.Conn, m *map[string]string, letter string, c string) {
+	words := *m
+	code := words[letter]
+	for _, symbol := range code {
+		//fmt.Printf("%c", symbol)
+		if symbol == '1' {
+			sendmorse(t, true, c)
+		} else {
+			sendmorse(t, false, c)
 		}
 	}
+
 }
 
 func main() {
@@ -112,7 +119,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	m := make(map[rune]string)
+	m := make(map[string]string)
 	ma := &m
 	populatetable(ma)
 	time.Sleep(100)
@@ -124,16 +131,19 @@ func main() {
 			check = 1
 		}
 	}
-
+	sendletter(&conn, ma, "KA", color)
 	if check == 1 {
 		for {
 			sendword(&conn, ma, wort, color)
+			time.Sleep(7 * dit)
 		}
 	} else {
 		//expect(t, "Escape character is '^]'.")
 		sendword(&conn, ma, wort, color)
 		//ls, err := t.ReadBytes('$')
 		//checkErr(err)
+		time.Sleep(7 * dit)
 	}
+	sendletter(&conn, ma, "AR", color)
 	//os.Stdout.Write(ls)
 }
