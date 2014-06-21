@@ -132,6 +132,7 @@ func main() {
 		}
 	}
 	sendletter(&conn, ma, "KA", color)
+	time.Sleep(7 * dit)
 	if check == 1 {
 		for {
 			sendword(&conn, ma, wort, color)
