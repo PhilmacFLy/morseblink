@@ -95,11 +95,19 @@ func sendword(t *net.Conn, m *map[rune]string, w string, c string) {
 }
 
 func main() {
-	if len(os.Args) != 4 {
-		fmt.Fprintf(os.Stderr, "Usage: %s IP:Port WORD COLOR\n", os.Args[0])
+	if len(os.Args) < 4 {
+		fmt.Fprintf(os.Stderr, "Usage: %s IP:Port WORD COLOR [-r]\n", os.Args[0])
 		return
 	}
-	ip, wort, color := os.Args[1], os.Args[2], os.Args[3]
+	ip := ""
+	wort := ""
+	color := ""
+	repeat := ""
+	if len(os.Args) > 4 {
+		ip, wort, color, repeat = os.Args[1], os.Args[2], os.Args[3], os.Args[4]
+	} else {
+		ip, wort, color = os.Args[1], os.Args[2], os.Args[3]
+	}
 	conn, err := net.Dial("tcp", ip)
 	if err != nil {
 		log.Fatal(err)
@@ -107,13 +115,25 @@ func main() {
 	m := make(map[rune]string)
 	ma := &m
 	populatetable(ma)
-
-	//expect(t, "Escape character is '^]'.")
 	time.Sleep(100)
 	sendreset(&conn)
-	sendword(&conn, ma, wort, color)
-	//ls, err := t.ReadBytes('$')
-	//checkErr(err)
 
+	check := 0
+	if strings.TrimSpace(repeat) != "" {
+		if repeat == "-r" {
+			check = 1
+		}
+	}
+
+	if check == 1 {
+		for {
+			sendword(&conn, ma, wort, color)
+		}
+	} else {
+		//expect(t, "Escape character is '^]'.")
+		sendword(&conn, ma, wort, color)
+		//ls, err := t.ReadBytes('$')
+		//checkErr(err)
+	}
 	//os.Stdout.Write(ls)
 }
